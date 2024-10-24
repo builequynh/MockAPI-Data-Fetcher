@@ -399,3 +399,24 @@ input::-webkit-outer-spin-button{
     opacity: 1;
     visibility: visible;
 }
+th {
+    cursor: pointer; 
+}
+
+th i {
+    margin-left: 5px; 
+    opacity: 0.5; 
+}
+
+th:hover i {
+    opacity: 1; 
+    color: yellow;
+}
+
+th.sorted-asc i:after {
+    content: ' ↑'; 
+}
+th.sorted-desc i:after {
+    content: ' ↓'; 
+}
+

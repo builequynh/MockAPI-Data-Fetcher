@@ -25,8 +25,10 @@ submitBtn = document.querySelector('.submitBtn'),
   table = document.querySelector("table"),
   filterData = document.getElementById("search")
 
-let originalData = localStorage.getItem('userProfile') ? JSON.parse(localStorage.getItem('userProfile')) : []
-let getData = [...originalData]
+// let originalData = localStorage.getItem('userProfile') ? JSON.parse(localStorage.getItem('userProfile')) : []
+// let getData = [...originalData]
+let originalData = [];
+let getData = [];
 
 
 let isEdit = false, editId
@@ -39,6 +41,20 @@ var currentIndex = 1
 var maxIndex = 0
 
 showInfo()
+
+async function fetchData() {
+    try {
+        const response = await fetch('https://67186c67b910c6a6e02c0b6e.mockapi.io/users');
+        originalData = await response.json();
+        getData = [...originalData];
+        showInfo();  
+        displayIndexBtn();  
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+fetchData();
 
 
 newMemberAddBtn.addEventListener('click', ()=> {
@@ -134,60 +150,57 @@ function highlightIndexBtn(){
     showInfo()
 }
 
+function showInfo() {
+    // Xóa tất cả các dòng hiện có trong bảng
+    document.querySelectorAll(".employeeDetails").forEach(info => info.remove());
 
+    // Tính chỉ số bắt đầu và kết thúc cho phân trang
+    var tab_start = startIndex - 1; // Chỉ số bắt đầu (bắt đầu từ 0)
+    var tab_end = endIndex; // Chỉ số kết thúc (không bao gồm)
 
+    // Kiểm tra xem có dữ liệu hay không
+    if (getData.length > 0) {
+        for (var i = tab_start; i < tab_end && i < getData.length; i++) { 
+            var staff = getData[i];
 
-function showInfo(){
-    document.querySelectorAll(".employeeDetails").forEach(info => info.remove())
+            if (staff) {
+                let createElement = `<tr class="employeeDetails">
+                    <td>${i + 1}</td>
+                    <td><img src="${staff.picture}" alt="" width="40" height="40"></td>
+                    <td>${staff.fName + " " + staff.lName}</td>
+                    <td>${staff.ageVal}</td>
+                    <td>${staff.cityVal}</td>
+                    <td>${staff.positionVal}</td>
+                    <td>${staff.salaryVal}</td>
+                    <td>${staff.sDateVal}</td>
+                    <td>${staff.emailVal}</td>
+                    <td>${staff.phoneVal}</td>
+                    <td>
+                        <button onclick="readInfo('${staff.picture}', '${staff.fName}', '${staff.lName}', '${staff.ageVal}', '${staff.cityVal}', '${staff.positionVal}', '${staff.salaryVal}', '${staff.sDateVal}', '${staff.emailVal}', '${staff.phoneVal}')"><i class="fa-regular fa-eye"></i></button>
+                        <button onclick="editInfo('${i}', '${staff.picture}', '${staff.fName}', '${staff.lName}', '${staff.ageVal}', '${staff.cityVal}', '${staff.positionVal}', '${staff.salaryVal}', '${staff.sDateVal}', '${staff.emailVal}', '${staff.phoneVal}')"><i class="fa-regular fa-pen-to-square"></i></button>
+                        <button onclick="deleteInfo(${i})"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>`;
 
-    var tab_start = startIndex - 1
-    var tab_end = endIndex
-
-    if(getData.length > 0){
-        for(var i=tab_start; i<tab_end; i++){
-            var staff = getData[i]
-
-
-            if(staff){
-                let createElement = `<tr class = "employeeDetails">
-                <td>${i+1}</td>
-                <td><img src="${staff.picture}" alt="" width="40" height="40"></td>
-                <td>${staff.fName + " " + staff.lName}</td>
-                <td>${staff.ageVal}</td>
-                <td>${staff.cityVal}</td>
-                <td>${staff.positionVal}</td>
-                <td>${staff.salaryVal}</td>
-                <td>${staff.sDateVal}</td>
-                <td>${staff.emailVal}</td>
-                <td>${staff.phoneVal}</td>
-                <td>
-                    <button onclick="readInfo('${staff.picture}', '${staff.fName}', '${staff.lName}', '${staff.ageVal}', '${staff.cityVal}', '${staff.positionVal}', '${staff.salaryVal}', '${staff.sDateVal}', '${staff.emailVal}', '${staff.phoneVal}')"><i class="fa-regular fa-eye"></i></button>
-
-                    <button onclick="editInfo('${i}', '${staff.picture}', '${staff.fName}', '${staff.lName}', '${staff.ageVal}', '${staff.cityVal}', '${staff.positionVal}', '${staff.salaryVal}', '${staff.sDateVal}', '${staff.emailVal}', '${staff.phoneVal}')"><i class="fa-regular fa-pen-to-square"></i></button>
-
-
-                    <button onclick = "deleteInfo(${i})"><i class="fa-regular fa-trash-can"></i></button>
-                </td>
-            </tr>`
-
-                userInfo.innerHTML += createElement
-                table.style.minWidth = "1400px"
+                userInfo.innerHTML += createElement; 
+                table.style.minWidth = "1400px"; 
             }
         }
-    }
-
-
-    else{
-        userInfo.innerHTML = `<tr class="employeeDetails"><td class="empty" colspan="11" align="center">No data available in table</td></tr>`
-        table.style.minWidth = "1400px"
+    } else {
+       
+        userInfo.innerHTML = `<tr class="employeeDetails"><td class="empty" colspan="11" align="center">No data available in table</td></tr>`;
+        table.style.minWidth = "1400px";
     }
 }
+
 
 showInfo()
 
 
 function readInfo(pic, fname, lname, Age, City, Position, Salary, SDate, Email, Phone){
-    imgInput.src = pic
+    // imgInput.src = pic
+    imgInput.src = pic && pic !== "undefined" ? pic : DEFAULT_IMAGE;
+    imgInput.onerror = () => imgInput.src = DEFAULT_IMAGE;
     fName.value = fname
     lName.value = lname
     age.value = Age
@@ -232,7 +245,9 @@ function editInfo(id, pic, fname, lname, Age, City, Position, Salary, SDate, Ema
         phoneVal: Phone
     }
 
-    imgInput.src = pic
+    // imgInput.src = pic
+    imgInput.src = pic && pic !== "undefined" ? pic : DEFAULT_IMAGE;
+    imgInput.onerror = () => imgInput.src = DEFAULT_IMAGE;
     fName.value = fname
     lName.value = lname
     age.value = Age
@@ -257,99 +272,116 @@ function editInfo(id, pic, fname, lname, Age, City, Position, Salary, SDate, Ema
     imgHolder.style.pointerEvents = "auto"
 }
 
-function deleteInfo(index){
-    if(confirm("Aer you sure want to delete?")){
+async function deleteInfo(index) {
+    if (confirm("Are you sure want to delete?")) {
+        const userId = originalData[index].id;
+
+   
+        await fetch(`https://67186c67b910c6a6e02c0b6e.mockapi.io/users/${userId}`, {
+            method: 'DELETE'
+        });
+
         originalData.splice(index, 1);
-        localStorage.setItem("userProfile", JSON.stringify(originalData));
-        
-        // Update getData after deleting the record
         getData = [...originalData];
 
-        preLoadCalculations()
+        preLoadCalculations();
 
-        if(getData.length === 0){
-            currentIndex = 1
-            startIndex = 1
-            endIndex = 0
-        }
-        else if(currentIndex > maxIndex){
-            currentIndex = maxIndex
-        }
-
-        showInfo()
-        highlightIndexBtn()
-        displayIndexBtn()
-
-        var nextBtn = document.querySelector('.next')
-        var prevBtn = document.querySelector('.prev')
-
-        if(Math.floor(maxIndex) > currentIndex){
-            nextBtn.classList.add("act")
-        }
-        else{
-            nextBtn.classList.remove("act")
+        if (getData.length === 0) {
+            currentIndex = 1;
+            startIndex = 1;
+            endIndex = 0;
+        } else if (currentIndex > maxIndex) {
+            currentIndex = maxIndex;
         }
 
+        showInfo();
+        highlightIndexBtn();
+        displayIndexBtn();
 
-        if(currentIndex > 1){
-            prevBtn.classList.add('act')
+        var nextBtn = document.querySelector('.next');
+        var prevBtn = document.querySelector('.prev');
+
+        if (Math.floor(maxIndex) > currentIndex) {
+            nextBtn.classList.add("act");
+        } else {
+            nextBtn.classList.remove("act");
+        }
+
+        if (currentIndex > 1) {
+            prevBtn.classList.add('act');
         }
     }
 }
 
 
-form.addEventListener('submit', (e)=> {
+form.addEventListener('submit', async (e) => {
     e.preventDefault()
 
     const information = {
-        id: Date.now(),
-        picture: imgInput.src == undefined ? "./img/pic1.png" :imgInput.src,
+        picture: imgInput.src == undefined ? "./img/pic1.png" : imgInput.src,
         fName: fName.value,
         lName: lName.value,
         ageVal: age.value,
-        cityVal: city.value,
+cityVal: city.value,
         positionVal: position.value,
         salaryVal: salary.value,
         sDateVal: sDate.value,
         emailVal: email.value,
         phoneVal: phone.value
+    };
+
+    if (!isEdit) {
+        
+        const response = await fetch('https://67186c67b910c6a6e02c0b6e.mockapi.io/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(information)
+        });
+        const newUser = await response.json();
+        originalData.unshift(newUser);  // Thêm dữ liệu mới vào mảng
+    } else {
+        // Cập nhật thông tin nhân viên qua API PUT
+        const userIdId = originalData[editId].id;
+        const response = await fetch(`https://67186c67b910c6a6e02c0b6e.mockapi.io/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(information)
+        });
+        const updatedUser = await response.json();
+        originalData[editId] = updatedUser;  
     }
 
-    if(!isEdit){
-        originalData.unshift(information)
-    }
-    else{
-        originalData[editId] = information
-    }
-    getData = [...originalData]
-    localStorage.setItem('userProfile', JSON.stringify(originalData))
+    getData = [...originalData];
 
-    submitBtn.innerHTML = "Submit"
-    modalTitle.innerHTML = "Fill the Form"
+    // Cập nhật giao diện
+    submitBtn.innerHTML = "Submit";
+    modalTitle.innerHTML = "Fill the Form";
 
-    darkBg.classList.remove('active')
-    popupForm.classList.remove('active')
-    form.reset()
+    darkBg.classList.remove('active');
+    popupForm.classList.remove('active');
+    form.reset();
 
+    highlightIndexBtn();
+    displayIndexBtn();
+    showInfo();
 
-    highlightIndexBtn()
-    displayIndexBtn()
-    showInfo()
-
-    var nextBtn = document.querySelector(".next")
-    var prevBtn = document.querySelector(".prev")
-    if(Math.floor(maxIndex) > currentIndex){
-        nextBtn.classList.add("act")
-    }
-    else{
-        nextBtn.classList.remove("act")
+    var nextBtn = document.querySelector(".next");
+    var prevBtn = document.querySelector(".prev");
+    if (Math.floor(maxIndex) > currentIndex) {
+        nextBtn.classList.add("act");
+    } else {
+        nextBtn.classList.remove("act");
     }
 
-
-    if(currentIndex > 1){
-        prevBtn.classList.add("act")
+    if (currentIndex > 1) {
+        prevBtn.classList.add("act");
     }
-})
+});
+
 
 
 function next(){
@@ -451,6 +483,76 @@ filterData.addEventListener("input", ()=> {
     startIndex = 1
     displayIndexBtn()
 })
+let currentSortColumn = null; 
+let currentSortOrder = 'asc'; 
+
+function sortTable(columnName) {
+    
+    if (currentSortColumn === columnName) {
+        currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc'; 
+    } else {
+        currentSortOrder = 'asc'; 
+        currentSortColumn = columnName; 
+    }
+
+    // Sắp xếp dữ liệu
+    getData.sort((a, b) => {
+        let valA, valB;
+
+        // Lấy giá trị tùy thuộc vào cột
+        if (columnName === 'name') {
+            valA = a.fName + ' ' + a.lName;
+            valB = b.fName + ' ' + b.lName;
+        } else if (columnName === 'age') {
+            valA = a.ageVal; // Tuổi
+            valB = b.ageVal;
+        } else if (columnName === 'salary') {
+            valA = parseFloat(a.salaryVal); // Lương
+            valB = parseFloat(b.salaryVal);
+        } else if (columnName === 'city') {
+            valA = a.cityVal.toLowerCase(); 
+            valB = b.cityVal.toLowerCase();
+        } else if (columnName === 'position') {
+            valA = a.positionVal.toLowerCase(); // Vị trí
+            valB = b.positionVal.toLowerCase();
+        } else if (columnName === 'email') {
+            valA = a.emailVal.toLowerCase(); // Email
+            valB = b.emailVal.toLowerCase();
+        } else if (columnName === 'startDate') {
+            valA = new Date(a.sDateVal); // Ngày bắt đầu
+            valB = new Date(b.sDateVal);
+        }
+
+        // So sánh theo thứ tự
+        if (currentSortOrder === 'asc') {
+            return valA > valB ? 1 : -1; // Sắp xếp tăng dần
+        } else {
+            return valA < valB ? 1 : -1; // Sắp xếp giảm dần
+        }
+    });
+
+    showInfo(); // Cập nhật hiển thị bảng sau khi sắp xếp
+}
+
+const tableHeaders = document.querySelectorAll("table thead th");
+tableHeaders.forEach(header => {
+    if (header.innerText === "Full Name") {
+        header.addEventListener("click", () => sortTable('name')); // Sắp xếp theo tên
+    } else if (header.innerText === "Age") {
+        header.addEventListener("click", () => sortTable('age')); // Sắp xếp theo tuổi
+    } else if (header.innerText === "Salary") {
+        header.addEventListener("click", () => sortTable('salary')); // Sắp xếp theo lương
+    } else if (header.innerText === "City") {
+        header.addEventListener("click", () => sortTable('city')); // Sắp xếp theo thành phố
+    } else if (header.innerText === "Position") {
+        header.addEventListener("click", () => sortTable('position')); // Sắp xếp theo vị trí
+    } else if (header.innerText === "Email") {
+        header.addEventListener("click", () => sortTable('email')); // Sắp xếp theo email
+    } else if (header.innerText === "Start Date") {
+        header.addEventListener("click", () => sortTable('startDate')); // Sắp xếp theo ngày bắt đầu
+    }
+});
+
 
 
 displayIndexBtn()

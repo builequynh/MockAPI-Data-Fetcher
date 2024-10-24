@@ -42,7 +42,7 @@
         <table>
 
             <thead>
-                <tr class="heading">
+                <!-- <tr class="heading">
                     <th>SL No</th>
                     <th>Picture</th>
                     <th>Full Name</th>
@@ -54,7 +54,23 @@
                     <th>Email</th>
                     <th>Phone</th>
                     <th>Action</th>
-                </tr>
+                </tr> -->
+                <thead>
+                    <tr class="heading">
+                        <th>SL No</th>
+                        <th>Picture</th>
+                        <th onclick="sortTable('name')">Full Name <i class="fa fa-sort"></i></th>
+                        <th onclick="sortTable('age')">Age <i class="fa fa-sort"></i></th>
+                        <th onclick="sortTable('city')">City <i class="fa fa-sort"></i></th> <!-- Sắp xếp theo City -->
+                        <th onclick="sortTable('position')">Position <i class="fa fa-sort"></i></th> <!-- Sắp xếp theo Position -->
+                        <th onclick="sortTable('salary')">Salary <i class="fa fa-sort"></i></th>
+                        <th onclick="sortTable('sDate')">Start Date <i class="fa fa-sort"></i></th> <!-- Sắp xếp theo Start Date -->
+                        <th onclick="sortTable('email')">Email <i class="fa fa-sort"></i></th> <!-- Sắp xếp theo Email -->
+                        <th onclick="sortTable('phone')">Phone <i class="fa fa-sort"></i></th> <!-- Sắp xếp theo Phone -->
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                
             </thead>
 
 
