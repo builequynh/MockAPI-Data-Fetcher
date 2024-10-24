@@ -151,12 +151,11 @@ function highlightIndexBtn(){
 }
 
 function showInfo() {
-    // Xóa tất cả các dòng hiện có trong bảng
     document.querySelectorAll(".employeeDetails").forEach(info => info.remove());
 
     // Tính chỉ số bắt đầu và kết thúc cho phân trang
-    var tab_start = startIndex - 1; // Chỉ số bắt đầu (bắt đầu từ 0)
-    var tab_end = endIndex; // Chỉ số kết thúc (không bao gồm)
+    var tab_start = startIndex - 1; 
+    var tab_end = endIndex; 
 
     // Kiểm tra xem có dữ liệu hay không
     if (getData.length > 0) {
@@ -223,106 +222,81 @@ function readInfo(pic, fname, lname, Age, City, Position, Salary, SDate, Email, 
     imgHolder.style.pointerEvents = "none"
 }
 
-function editInfo(id, pic, fname, lname, Age, City, Position, Salary, SDate, Email, Phone){
-    isEdit = true
-    editId = id
+function editInfo(id, pic, fname, lname, Age, City, Position, Salary, SDate, Email, Phone) {
+    isEdit = true;
+    editId = id; // Ghi lại chỉ số của người dùng cần chỉnh sửa
 
-    // Find the index of the item to edit in the original data based on id
-    const originalIndex = originalData.findIndex(item => item.id === id)
+    // Lấy thông tin của người dùng cần chỉnh sửa từ originalData
+    const originalIndex = originalData.findIndex(item => item.id === originalData[id].id);
 
-    // Update the original data
-    originalData[originalIndex] = {
-        id: id,
-        picture: pic,
-        fName: fname,
-        lName: lname,
-        ageVal: Age,
-        cityVal: City,
-        positionVal: Position,
-        salaryVal: Salary,
-        sDateVal: SDate,
-        emailVal: Email,
-        phoneVal: Phone
-    }
-
-    // imgInput.src = pic
+    // Hiển thị thông tin người dùng trong popup
     imgInput.src = pic && pic !== "undefined" ? pic : DEFAULT_IMAGE;
     imgInput.onerror = () => imgInput.src = DEFAULT_IMAGE;
-    fName.value = fname
-    lName.value = lname
-    age.value = Age
-    city.value = City
-    position.value = Position
-    salary.value = Salary
-    sDate.value = SDate
-    email.value = Email
-    phone.value = Phone
+    fName.value = fname;
+    lName.value = lname;
+    age.value = Age;
+    city.value = City;
+    position.value = Position;
+    salary.value = Salary;
+    sDate.value = SDate;
+    email.value = Email;
+    phone.value = Phone;
 
-
-    darkBg.classList.add('active')
-    popupForm.classList.add('active')
-    popupFooter.style.display = "block"
-    modalTitle.innerHTML = "Update the Form"
-    submitBtn.innerHTML = "Update"
+    darkBg.classList.add('active');
+    popupForm.classList.add('active');
+    popupFooter.style.display = "block";
+    modalTitle.innerHTML = "Update the Form";
+    submitBtn.innerHTML = "Update";
     formInputFields.forEach(input => {
-        input.disabled = false
-    })
+        input.disabled = false; // Bật lại các trường để có thể chỉnh sửa
+    });
 
-
-    imgHolder.style.pointerEvents = "auto"
+    imgHolder.style.pointerEvents = "auto";
 }
 
+
 async function deleteInfo(index) {
-    if (confirm("Are you sure want to delete?")) {
-        const userId = originalData[index].id;
+    if (confirm("Are you sure you want to delete?")) {
+        const userId = originalData[index].id; // Lấy ID người dùng
+        console.log('Deleting user with ID:', userId);
 
-   
-        await fetch(`https://67186c67b910c6a6e02c0b6e.mockapi.io/users/${userId}`, {
-            method: 'DELETE'
-        });
+        // Gửi yêu cầu xóa đến API
+        try {
+            const response = await fetch(`https://67186c67b910c6a6e02c0b6e.mockapi.io/users/${userId}`, {
+                method: 'DELETE'
+            });
 
-        originalData.splice(index, 1);
-        getData = [...originalData];
+            // Kiểm tra phản hồi từ API
+            if (response.ok) {
+                console.log('User deleted successfully');
+                originalData.splice(index, 1); 
+                getData = [...originalData]; 
 
-        preLoadCalculations();
+                preLoadCalculations();
+                currentIndex = Math.min(currentIndex, maxIndex); 
 
-        if (getData.length === 0) {
-            currentIndex = 1;
-            startIndex = 1;
-            endIndex = 0;
-        } else if (currentIndex > maxIndex) {
-            currentIndex = maxIndex;
-        }
-
-        showInfo();
-        highlightIndexBtn();
-        displayIndexBtn();
-
-        var nextBtn = document.querySelector('.next');
-        var prevBtn = document.querySelector('.prev');
-
-        if (Math.floor(maxIndex) > currentIndex) {
-            nextBtn.classList.add("act");
-        } else {
-            nextBtn.classList.remove("act");
-        }
-
-        if (currentIndex > 1) {
-            prevBtn.classList.add('act');
+                showInfo();
+                displayIndexBtn(); 
+            } else {
+                console.error('Failed to delete user:', response.statusText);
+                const errorMessage = await response.text();
+                console.log('Error message from server:', errorMessage);
+            }
+        } catch (error) {
+            console.error('Error occurred while deleting user:', error); 
         }
     }
 }
 
-
 form.addEventListener('submit', async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const information = {
         picture: imgInput.src == undefined ? "./img/pic1.png" : imgInput.src,
         fName: fName.value,
         lName: lName.value,
         ageVal: age.value,
-cityVal: city.value,
+        cityVal: city.value,
         positionVal: position.value,
         salaryVal: salary.value,
         sDateVal: sDate.value,
@@ -331,7 +305,6 @@ cityVal: city.value,
     };
 
     if (!isEdit) {
-        
         const response = await fetch('https://67186c67b910c6a6e02c0b6e.mockapi.io/users', {
             method: 'POST',
             headers: {
@@ -343,7 +316,7 @@ cityVal: city.value,
         originalData.unshift(newUser);  // Thêm dữ liệu mới vào mảng
     } else {
         // Cập nhật thông tin nhân viên qua API PUT
-        const userIdId = originalData[editId].id;
+        const userId = originalData[editId].id; // Lấy ID của nhân viên cần cập nhật
         const response = await fetch(`https://67186c67b910c6a6e02c0b6e.mockapi.io/users/${userId}`, {
             method: 'PUT',
             headers: {
@@ -453,36 +426,35 @@ tabSize.addEventListener('change', ()=>{
 
 
 
-filterData.addEventListener("input", ()=> {
-    const searchTerm = filterData.value.toLowerCase().trim()
+filterData.addEventListener("input", () => {
+    const searchTerm = filterData.value.toLowerCase().trim();
 
-    if(searchTerm !== ""){
-
+    if (searchTerm !== "") {
         const filteredData = originalData.filter((item) => {
-            const fullName = (item.fName + " " + item.lName).toLowerCase()
-            const city = item.cityVal.toLowerCase()
-            const position = item.positionVal.toLowerCase()
+            const fullName = (item.fName + " " + item.lName).toLowerCase();
+            const city = item.cityVal.toLowerCase();
+            const position = item.positionVal.toLowerCase();
 
-            return(
+            return (
                 fullName.includes(searchTerm) ||
                 city.includes(searchTerm) ||
                 position.includes(searchTerm)
-            )
-        })
+            );
+        });
 
         // Update the current data with filtered data
-        getData = filteredData
+        getData = filteredData;
+    } else {
+        // Reset getData to originalData when the search input is cleared
+        getData = [...originalData]; // Make sure to reset it properly
     }
 
-    else{
-        getData = JSON.parse(localStorage.getItem('userProfile')) || []
-    }
+    showInfo();
+    currentIndex = 1; // Reset the current index
+    startIndex = 1;   // Reset the start index
+    displayIndexBtn();
+});
 
-
-    currentIndex = 1
-    startIndex = 1
-    displayIndexBtn()
-})
 let currentSortColumn = null; 
 let currentSortOrder = 'asc'; 
 
